@@ -1,0 +1,140 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+	<title>ECOLA BY SELENE-DESNA</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+	<link rel="stylesheet" href="main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-scrollto"></script>
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet"> 
+
+</head>
+<body>
+
+	
+<div id="ecola" v-if="visible" >
+
+	<div id="exit" v-on:click="Close()"></div>
+	<div id="canva">
+	
+		<div id="text">{{ currency }} {{ price }}.0</div>
+
+		<div id="sodas">
+				<img class="soda" :src="'images/canvas/button'+sodas[0].img+'.png'" alt="" v-on:click="Buy(sodas[0])" />
+				<img class="soda" :src="'images/canvas/button'+sodas[1].img+'.png'" alt="" v-on:click="Buy(sodas[1])" />
+				<img class="soda" :src="'images/canvas/button'+sodas[2].img+'.png'" alt="" v-on:click="Buy(sodas[2])" />
+		</div>
+		
+		<img id="pusheditem" :src="'images/canvas/'+ pusheditem.img +'can.png'" alt="" v-on:click="TakePushedItem()">
+
+	</div>
+
+</div>
+
+
+
+<!-- Scripts -->
+<script>
+
+	let ecola = new Vue({
+		el: '#ecola',
+		data: {
+			
+			currency: '€',
+			price: '2',
+
+			sodas: [
+				{ img:'ecola', item:'' }, 
+				{ img:'sprunk', item:'' },  
+				{ img:'orangotang', item:'' }
+			],
+
+			visible: false,
+			 
+			pusheditem: { img:'', item:'' }, 
+
+
+
+		},
+		watch: {},
+		methods: {
+		
+			Close(){ 
+				ecola.visible = false
+                if ('alt' in window) { 
+				    alt.emit('close')
+                }
+			},
+
+			Buy(item){
+
+                if (!ecola.pusheditemready) {
+					
+					if ('alt' in window) {
+						alt.emit('pay', ecola.price)
+						alt.emit('sound', "flares_empty","DLC_SM_Countermeasures_Sounds")
+						setTimeout( function(){ alt.emit('sound', "Garage_Door_Open", "GTAO_Script_Doors_Faded_Screen_Sounds") }, 200)
+					}
+					
+					ecola.pusheditemready = true
+					document.getElementById('ecola').style.animation = 'shakemachine'; 
+					document.getElementById('ecola').style.animationDuration = '1500ms'; 
+
+
+					setTimeout( function(){
+
+						if ('alt' in window) {
+							alt.emit('sound', "CLOSED", "MP_PROPERTIES_ELEVATOR_DOORS")
+						}
+						ecola.pusheditem = item
+
+						document.getElementById('ecola').style.animation = 'none'; 
+						document.getElementById('ecola').style.animationDuration = '0ms'; 
+
+					}, 1500);
+				}
+			},
+
+			TakePushedItem(){
+
+                if ('alt' in window) {
+				    alt.emit('give', ecola.pusheditem.item)
+                }
+
+				ecola.pusheditem = { img:'', item:'' }
+				ecola.pusheditemready = false
+
+			},
+
+		}
+	});
+
+</script>
+<script>
+
+	if ('alt' in window) {
+		alt.on('open', () => {
+			ecola.visible = true;
+		});
+		alt.on('data', (data) => {
+
+			ecola.currency = data.currency;
+			ecola.price = data.price;
+			ecola.sodas = data.sodas;
+			
+		});
+		alt.on('close', () => {
+			ecola.visible = false;
+		});
+	}
+	
+</script>
+
+
+</body>
+</html>

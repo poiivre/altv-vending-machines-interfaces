@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+	<title>RAINE OUTSIDE BY SELENE-DESNA</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+	<link rel="stylesheet" href="main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-scrollto"></script>
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet"> 
+
+</head>
+<body>
+
+
+<div id="raineoutside" v-if="visible" >
+
+	<div id="exit" v-on:click="Close()"></div>
+	<div id="canva">
+	
+		<div id="text">{{ currency }} {{ price }}.0</div>	
+		<div id="button" v-on:click="Buy()"></div>
+
+		<img id="rainebottle" src="images/canvas/rainebottle.png" v-if="bottlevisible" alt="" v-on:click="TakeBottle()">
+
+	</div>
+
+</div>
+
+
+
+<!-- Scripts -->
+<script>
+
+	let raineoutside = new Vue({
+		el: '#raineoutside',
+		data: {
+			
+			currency: '€',
+			price: '2',
+
+			item: 'Rainé Bottle',
+
+			visible: false,
+
+			bottlevisible: false, 
+			bottleready: false,
+
+
+
+		},
+		watch: {},
+		methods: {
+		
+			Close(){ 
+				raineoutside.visible = false
+                if ('alt' in window) { 
+				    alt.emit('close')
+                }
+			},
+
+			Buy(){
+
+				if (!raineoutside.bottleready && !raineoutside.bottlevisible) {
+				
+					if ('alt' in window) {
+						alt.emit('pay', raineoutside.price)
+						alt.emit('sound', "flares_empty","DLC_SM_Countermeasures_Sounds")
+						setTimeout( function(){ alt.emit('sound', "collect_water", "dlc_sum20_yacht_missions_ah_sounds") }, 200)
+					}
+
+					document.getElementById('raineoutside').style.animation = 'shakemachine'; 
+					document.getElementById('raineoutside').style.animationDuration = '1200ms'; 
+
+					raineoutside.bottlevisible = true
+
+					setTimeout( function(){
+						
+						raineoutside.bottleready = true
+
+						document.getElementById('raineoutside').style.animation = 'none'; 
+						document.getElementById('raineoutside').style.animationDuration = '0ms'; 
+
+					}, 1200);
+				}
+			},
+
+			TakeBottle(){
+
+				if (raineoutside.bottleready) {
+					if ('alt' in window) {
+						alt.emit('give', raineoutside.item)
+					}
+
+					raineoutside.bottlevisible = false
+					raineoutside.bottleready = false
+				}
+			},
+
+		}
+	});
+
+</script>
+<script>
+
+	if ('alt' in window) {
+		alt.on('open', () => {
+			raineoutside.visible = true;
+		});
+		alt.on('data', (data) => {
+
+			raineoutside.currency = data.currency;
+			raineoutside.price = data.price;
+			raineoutside.item = data.item;
+			
+		});
+		alt.on('close', () => {
+			raineoutside.visible = false;
+		});
+	}
+	
+</script>
+
+
+</body>
+</html>

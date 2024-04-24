@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+	<title>BEAN MACHINE BY SELENE-DESNA</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+	<link rel="stylesheet" href="main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-scrollto"></script>
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet"> 
+
+</head>
+<body>
+
+
+<div id="beanmachine" v-if="visible" >
+
+	<div id="exit" v-on:click="Close()"></div>
+	<div id="canva">
+	
+		<div id="text">{{ currency }} {{ price }}.0</div>	
+		<div id="button" v-on:click="Buy()"></div>
+
+		<img id="coffeecup" src="images/canvas/beanmachinecup.png" v-if="cupvisible" alt="" v-on:click="TakeCup()">
+
+	</div>
+
+</div>
+
+
+
+<!-- Scripts -->
+<script>
+
+	let beanmachine = new Vue({
+		el: '#beanmachine',
+		data: {
+			
+			currency: '€',
+			price: '1',
+
+			item: 'Coffe Cup',
+
+			visible: false,
+
+			cupvisible: false, 
+			cupready: false,
+
+
+
+		},
+		watch: {},
+		methods: {
+		
+			Close(){ 
+				beanmachine.visible = false
+                if ('alt' in window) { 
+				    alt.emit('close')
+                }
+			},
+
+			Buy(){
+
+				if (!beanmachine.cupready && !beanmachine.cupvisible) {
+				
+					if ('alt' in window) {
+						alt.emit('pay', beanmachine.price)
+						alt.emit('sound', "flares_empty","DLC_SM_Countermeasures_Sounds")
+						setTimeout( function(){ alt.emit('sound', "collect_water", "dlc_sum20_yacht_missions_ah_sounds") }, 200)
+					}
+
+					document.getElementById('beanmachine').style.animation = 'shakemachine'; 
+					document.getElementById('beanmachine').style.animationDuration = '1200ms'; 
+
+					beanmachine.cupvisible = true
+
+					setTimeout( function(){
+						
+						beanmachine.cupready = true
+
+						document.getElementById('beanmachine').style.animation = 'none'; 
+						document.getElementById('beanmachine').style.animationDuration = '0ms'; 
+
+					}, 1200);
+				}
+			},
+
+			TakeCup(){
+
+				if (beanmachine.cupready) {
+					if ('alt' in window) {
+						alt.emit('give', beanmachine.item)
+					}
+
+					beanmachine.cupvisible = false
+					beanmachine.cupready = false
+				}
+			},
+
+		}
+	});
+
+</script>
+<script>
+
+	if ('alt' in window) {
+		alt.on('open', () => {
+			beanmachine.visible = true;
+		});
+		alt.on('data', (data) => {
+
+			beanmachine.currency = data.currency;
+			beanmachine.price = data.price;
+			beanmachine.item = data.item;
+			
+		});
+		alt.on('close', () => {
+			beanmachine.visible = false;
+		});
+	}
+	
+</script>
+
+
+</body>
+</html>

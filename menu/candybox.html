@@ -1,0 +1,205 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+	<title>CANDYBOX BY SELENE-DESNA</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+	<link rel="stylesheet" href="main.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-scrollto"></script>
+
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet"> 
+
+</head>
+<body>
+
+	
+<div id="candybox" v-if="visible" >
+
+	<div id="exit" v-on:click="Close()"></div>
+	<div id="canva">
+	
+		<div id="items1">
+			<center>
+				<img class="item" id="A-1" :src="'images/'+lineA[0].img+'.png'" alt="" v-on:click="Select(lineA[0])">
+				<img class="item" id="A-2" :src="'images/'+lineA[1].img+'.png'" alt="" v-on:click="Select(lineA[1])">
+				<img class="item" id="A-3" :src="'images/'+lineA[2].img+'.png'" alt="" v-on:click="Select(lineA[2])">
+			</center>
+		</div>
+		<div id="items2">
+			<center>
+				<img class="item" id="B-1" :src="'images/'+lineB[0].img+'.png'" alt="" v-on:click="Select(lineB[0])">
+				<img class="item" id="B-2" :src="'images/'+lineB[1].img+'.png'" alt="" v-on:click="Select(lineB[1])">
+				<img class="item" id="B-3" :src="'images/'+lineB[2].img+'.png'" alt="" v-on:click="Select(lineB[2])">
+			</center>
+		</div>
+		<div id="items3">
+			<center>
+				<img class="item" id="C-1" :src="'images/'+lineC[0].img+'.png'" alt="" v-on:click="Select(lineC[0])">
+				<img class="item" id="C-2" :src="'images/'+lineC[1].img+'.png'" alt="" v-on:click="Select(lineC[1])">
+				<img class="item" id="C-3" :src="'images/'+lineC[2].img+'.png'" alt="" v-on:click="Select(lineC[2])">
+			</center>
+		</div>
+		
+		
+		
+		<div id="glass"></div>
+		
+		
+		<div id="screen">______</div>
+		<div id="button" v-on:click="Buy()"></div>
+		
+		
+		<div id="ad" v-if="ad != ''"><center>{{ ad }}</center></div>
+
+		<img id="pusheditem" :src="'images/'+ pusheditem.img +'.png'" alt="" v-if="!pushvisible" v-on:click="TakePushedItem()">
+		<div id="push" v-if="pushvisible"></div>
+
+	</div>
+
+</div>
+
+
+
+
+
+
+
+<!-- Scripts -->
+<script>
+
+	let candybox = new Vue({
+		el: '#candybox',
+		data: {
+			
+			currency: '€',
+			ad: 'Place your Advertisement',
+
+			lineA: [
+				{ price:3, img:'ecola', item:'', pos:'A-1'}, 
+				{ price:3, img:'sprunk', item:'', pos:'A-2'},  
+				{ price:2, img:'orangotang', item:'', pos:'A-3'}
+			],
+			lineB: [
+				{ price:2, img:'cookies', item:'', pos:'B-1'}, 
+				{ price:2, img:'pepsicola', item:'', pos:'B-2'}, 
+				{ price:1, img:'water', item:'', pos:'B-3'}
+			],
+			lineC: [
+				{ price:2, img:'snack', item:'', pos:'C-1'},
+				{ price:3, img:'chips', item:'', pos:'C-2'},
+				{ price:5, img:'beer', item:'', pos:'C-3'}
+			],
+
+			visible: false,
+			pushvisible: true,
+			
+			thisitem: { price:0, img:'', item:'', pos:'' },    
+			pusheditem: { price:0, img:'', item:'', pos:'' },     
+
+
+
+		},
+		watch: {},
+		methods: {
+		
+			Close(){ 
+				candybox.visible = false
+                if ('alt' in window) { 
+				    alt.emit('close')
+                }
+			},
+
+			Select(item){
+
+				if (candybox.thisitem.pos != '') {
+					document.getElementById(candybox.thisitem.pos).classList.remove('chosen');
+				}
+
+				candybox.thisitem = item;
+				document.getElementById('screen').innerHTML = candybox.currency+" "+item.price+".00"
+				document.getElementById(item.pos).classList.add('chosen');
+			},
+
+			Buy(){
+
+				if (candybox.thisitem.pos == '') {
+					document.getElementById('screen').innerHTML = "ERR_##"
+				} else {
+
+                    if ('alt' in window) {
+                        alt.emit('pay', candybox.thisitem.price)
+                        alt.emit('sound', "flares_empty","DLC_SM_Countermeasures_Sounds")
+                        setTimeout( function(){ alt.emit('sound', "Garage_Door_Open", "GTAO_Script_Doors_Faded_Screen_Sounds") }, 200)
+                    }
+
+					document.getElementById('glass').style.pointerEvents = 'all';
+					document.getElementById('screen').innerHTML = candybox.thisitem.pos+" ##"
+
+					chosenitem = document.getElementById(candybox.thisitem.pos)
+					chosenitem.classList.remove('chosen');
+					chosenitem.style.animation = 'shake'; 
+					chosenitem.style.animationDuration = '1500ms'; 
+
+					setTimeout( function(){
+						if ('alt' in window) {
+						    alt.emit('sound', "CLOSED", "MP_PROPERTIES_ELEVATOR_DOORS")
+                        }
+						chosenitem.style.animation = 'none'; 
+						chosenitem.style.animationDuration = '0ms';
+						document.getElementById('screen').innerHTML = candybox.thisitem.pos+" OK"
+
+						candybox.pushvisible = false
+
+						candybox.pusheditem = candybox.thisitem
+						candybox.thisitem = { price:0, img:'', item:'', pos:'' }
+
+					}, 1500);
+				}
+			},
+
+			TakePushedItem(){
+				candybox.pushvisible = true
+				document.getElementById('glass').style.pointerEvents = 'none';
+
+                if ('alt' in window) {
+				    alt.emit('give', candybox.pusheditem.item)
+                }
+
+				candybox.pusheditem = { price:0, img:'', item:'', pos:'' }
+
+				document.getElementById('screen').innerHTML = "______"
+			},
+
+		}
+	});
+
+</script>
+<script>
+
+	if ('alt' in window) {
+		alt.on('open', () => {
+			candybox.visible = true;
+		});
+		alt.on('data', (data) => {
+
+			candybox.currency = data.currency;
+			candybox.ad = data.ad;
+			candybox.lineA = data.lineA;
+			candybox.lineB = data.lineB;
+			candybox.lineC = data.lineC;
+			
+		});
+		alt.on('close', () => {
+			candybox.visible = false;
+		});
+	}
+	
+</script>
+
+
+</body>
+</html>
